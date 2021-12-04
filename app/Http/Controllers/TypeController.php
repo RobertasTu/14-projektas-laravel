@@ -269,6 +269,8 @@ public function searchAjax(Request $request) {
             return $success_json;
         }
 
+        // if(count($types) == 0) {
+
         $error = [
             'error' => 'No results are found'
         ];
@@ -276,6 +278,7 @@ public function searchAjax(Request $request) {
         $errors_json = response()->json($error);
 
         return $errors_json;
+    // }
 
 
 }

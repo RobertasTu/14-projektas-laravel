@@ -4,7 +4,7 @@
 
 <div class="container">
     <div class="search-form row">
-        <div class="col-md-8">
+                <div class="col-md-8">
         </div>
         <div class="col-md-4">
             <input type="text" class="form-control" id="search-field" name="search-field"/>
@@ -12,6 +12,8 @@
             <span class="search-feedback">
             </span>
         </div>
+    </div>
+    <div class='search-alert'>
     </div>
     <div class="sort-form row">
         <div class="col-md-1">
@@ -397,11 +399,12 @@
                         createTable(data.articles);
                     } else {
                         $(".articles").css("display", "none");
-                        $(".articles theader").html("");
+                        // $(".articles theader").html("");
                         $(".articles tbody").html("");
-                        $(".search-alert").html("");
-                        $(".search-alert").append(data.error);
-                        // console.log(data.error)
+                        $(".search-alert").append("<div class='alert alert-danger'>"+ data.error +"</div>");
+                        // $(".search-alert").html("");
+                        // $(".search-alert").append(data.error);
+                        console.log(data.error)
                     }
                 }
             });

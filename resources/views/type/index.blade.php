@@ -36,6 +36,9 @@
     <div class="alerts">
     </div>
 
+    <div class='search-alert'>
+    </div>
+
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createTypeModal">
                 Create New Type Modal
                 </button>
@@ -348,16 +351,18 @@
                         console.log(data.success);
                         $(".types").css("display", "block");
                         $(".search-alert").html("");
-                        $(".search-alert").html(data.success);
                         createTable(data.types);
 
                     } else {
+                        // $(".types tbody").append("<tr><th>ID</th><th>Title</th><th>Description</th><th>Total Articles</th><th>Actions</th><th></th></tr>");
                         $(".types").css("display", "none");
-                        $(".types theader").html("");
                         $(".types tbody").html("");
-                        $(".search-alert").html("");
-                        $(".search-alert").append(data.error);
-                        // console.log(data.error)
+                        // $(".search-alert").html("");
+                        // $(".search-alert").append(data.error);
+                        $(".search-alert").append("<div class='alert alert-danger'>"+ data.error +"</div>");
+                        // $(".search-feedback").append(data.error);
+
+                        console.log(data.error)
                     }
                 }
             });
