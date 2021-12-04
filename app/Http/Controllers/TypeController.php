@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Article;
 use App\Type;
 use Illuminate\Http\Request;
 use Validator;
@@ -13,10 +14,10 @@ class TypeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
+    public function index(Request $request)
+    {   $articlesCount = $request->articlesCount;
         $types = Type::all();
-        return view('type.index', ['types'=>$types]);
+        return view('type.index', ['types'=>$types, 'articlesCount'=>$articlesCount]);
     }
 
     /**
@@ -42,6 +43,7 @@ class TypeController extends Controller
     public function storeAjax(Request $request) {
 
 
+
         $type = new Type;
 
         $input = [
@@ -60,6 +62,7 @@ class TypeController extends Controller
         if($validator->passes()) {
             $type->title = $request->typeTitle;
             $type->description = $request->typeDescription;
+            // $type->typeArticles = 0;
 
 
             $type->save();
@@ -69,6 +72,7 @@ class TypeController extends Controller
                 'typeId' => $type->id,
                 'typeTitle' => $type->title,
                 'typeDescription' => $type->description,
+
 
             ];
 
@@ -99,6 +103,8 @@ class TypeController extends Controller
     }
 
     public function showAjax(Type $type) {
+
+
 
         $success = [
             'success' => 'Type recieved successfully',
@@ -171,7 +177,7 @@ class TypeController extends Controller
             $type->save();
 
             $success = [
-                'success' => 'Article update successfully',
+                'success' => 'Type updated successfully',
                 'typeId' => $type->id,
                 'typeTitle' => $type->title,
                 'typeDescription' => $type->description,
@@ -210,15 +216,15 @@ class TypeController extends Controller
 
          $errorsuccess = array();
 
-        foreach($checkedTypes as $typeId) {
+        foreach($checkedTypes as $typeid) {
 
-            $type = Type::find($typeId);
+            $type = Type::find($typeid);
             $articles_count = $type->typeArticles->count();
 
                 $deleteAction = $type->delete();
                 if($deleteAction) {
                     $errorsuccess[] = 'success';
-                    $messages[] = "Company ".$typeId." deleted successfully";
+                    $messages[] = "Company ".$typeid." deleted successfully";
                 } else {
                     $messages[] = "Something went wrong";
                     $errorsuccess[] = 'danger';
@@ -238,5 +244,100 @@ class TypeController extends Controller
         return $success_json;
 
 
+}
+public function searchAjax(Request $request) {
+    $searchValue = $request->searchField;
+    $types = Type::query()
+        ->where('title', 'like', "%{$searchValue}%")
+        ->orWhere('description', 'like', "%{$searchValue}%")
+        ->get();
+
+        foreach ($types as $type) {
+            $type['articleCount'] =$type->typeArticles->count();
+        }
+
+        if($searchValue == '' || count($types)!= 0) {
+
+            $success = [
+                'success' => 'Found '.count($types),
+                'types' => $types
+            ];
+
+            $success_json = response()->json($success);
+
+
+            return $success_json;
+        }
+
+        $error = [
+            'error' => 'No results are found'
+        ];
+
+        $errors_json = response()->json($error);
+
+        return $errors_json;
+
+
+}
+
+public function indexAjax(Request $request) {
+
+    $sortCol = $request->sortCol;
+    $sortOrder = $request->sortOrder;
+
+    $types = Type::orderBy($sortCol, $sortOrder)->get();
+
+    foreach ($types as $type) {
+        $type['articleCount'] =$type->typeArticles->count();
+    }
+
+    $types_count = count($types);
+    if ($types_count == 0) {
+        $error = [
+            'error' => 'There are no types',
+        ];
+
+        $error_json = response()->json($error);
+        return $error_json;
+    }
+
+
+    $success = [
+        'success' => 'Types sorted successfuly',
+        'types' => $types
+    ];
+
+    $success_json = response()->json($success);
+
+    return $success_json;
+
+
+}
+public function filterAjax(Request $request) {
+
+
+        $types = type::all();
+
+
+
+    $types_count = count($types);
+
+    if ($types_count == 0) {
+        $error = [
+            'error' => 'There are no types',
+        ];
+
+        $error_json = response()->json($error);
+        return $error_json;
+    }
+
+    $success = [
+        'success' => 'Types filtered successfuly',
+        'types' => $types
+    ];
+
+    $success_json = response()->json($success);
+
+    return $success_json;
 }
 }

@@ -227,4 +227,141 @@ class ArticleController extends Controller
         return $success_json;
     }
 
+    public function destroySelected(Request $request) {
+        $checkedArticles = $request->checkedArticles;
+        $messages = array();
+        $errorsuccess = array();
+        foreach($checkedArticles as $articleid) {
+
+            $article = Article::find($articleid);
+
+                $deleteAction = $article->delete();
+                if($deleteAction) {
+                    $errorsuccess[] = 'success';
+                    $messages[] = "Article ".$articleid." deleted successfully";
+                } else {
+                    $messages[] = "Something went wrong";
+                    $errorsuccess[] = 'danger';
+                }
+            }
+        $success = [
+            'success' => $checkedArticles,
+            'messages' => $messages,
+            'errorsuccess' => $errorsuccess
+        ];
+
+        $success_json = response()->json($success);
+
+        return $success_json;
+
+    }
+    public function searchAjax(Request $request) {
+        $searchValue = $request->searchField;
+        $articles = Article::query()
+            ->where('title', 'like', "%{$searchValue}%")
+            ->orWhere('description', 'like', "%{$searchValue}%")
+            ->get();
+
+            foreach ($articles as $article) {
+                $article['typeTitle'] = $article->articleType->title;
+            }
+
+            if($searchValue == '' || count($articles)!= 0) {
+
+                $success = [
+                    'success' => 'Found '.count($articles),
+                    'articles' => $articles
+                ];
+
+                $success_json = response()->json($success);
+
+
+                return $success_json;
+            }
+
+            $error = [
+                'error' => 'No results are found'
+            ];
+
+            $errors_json = response()->json($error);
+
+            return $errors_json;
+
+
+    }
+
+    public function indexAjax(Request $request) {
+
+        $sortCol = $request->sortCol;
+        $sortOrder = $request->sortOrder;
+
+        $type_id = $request->type_id;
+        if($type_id == 'all') {
+            $articles = Article::orderBy($sortCol, $sortOrder)->get();
+        } else {
+            $articles = Article::where('type_id', $type_id)->orderBy($sortCol, $sortOrder)->get();
+        }
+
+        foreach ($articles as $article) {
+            $article['typeTitle'] = $article->articleType->title;
+        }
+        $articles_count = count($articles);
+        if ($articles_count == 0) {
+            $error = [
+                'error' => 'There are no articles',
+            ];
+
+            $error_json = response()->json($error);
+            return $error_json;
+        }
+
+
+        $success = [
+            'success' => 'Articles sorted successfuly',
+            'articles' => $articles
+        ];
+
+        $success_json = response()->json($success);
+
+        return $success_json;
+
+    }
+
+    public function filterAjax(Request $request) {
+
+        $type_id = $request->type_id;
+
+        if($type_id == 'all') {
+            $articles = Article::all();
+        } else {
+            $articles = Article::all()->where('type_id', $type_id);
+        }
+
+        foreach ($articles as $article) {
+            $article['typeTitle'] = $article->articleType->title;
+        }
+
+        $articles_count = count($articles);
+
+        if ($articles_count == 0) {
+            $error = [
+                'error' => 'There are no articles',
+            ];
+
+            $error_json = response()->json($error);
+            return $error_json;
+        }
+
+        $success = [
+            'success' => 'Articles filtered successfuly',
+            'articles' => $articles
+        ];
+
+        $success_json = response()->json($success);
+
+        return $success_json;
+    }
+
+
+
 }
